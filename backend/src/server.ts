@@ -13,11 +13,30 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+// Configure CORS - support multiple origins via comma-separated CORS_ORIGIN or single FRONTEND_URL
+const corsOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  : [process.env.FRONTEND_URL || 'http://localhost:3000'];
+
+console.log('CORS allowed origins:', corsOrigins);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'Referer'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (corsOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Reject with CORS error
+    console.error(`CORS blocked origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: false, // Set to false since your fetch uses credentials: "omit"
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'Referer', 'sec-ch-ua', 'sec-ch-ua-mobile', 'sec-ch-ua-platform'],
 }));
 
 app.use(express.json());
