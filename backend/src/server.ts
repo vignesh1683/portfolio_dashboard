@@ -16,8 +16,8 @@ app.listen(PORT, () => {
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
-  methods: ['GET'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'Referer'],
 }));
 
 app.use(express.json());
